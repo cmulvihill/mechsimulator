@@ -1,0 +1,17 @@
+# cmd: conda build . -c cantera -c conda-forge
+
+package:
+    name: mechsimulator
+    version: "0.1.0"
+
+source:
+    path: .
+
+requirements:
+    build:
+        - conda-forge::python=3.7
+    run:
+        - cantera::cantera
+        - conda-forge::python=3.7
+        - conda-forge::numpy=1.15.4
+        - conda-forge::matplotlib

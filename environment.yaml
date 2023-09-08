@@ -1,0 +1,25 @@
+name: mechsimulator-env
+
+channels:
+    - cantera
+    - conda-forge
+    - rdkit
+
+dependencies:
+    - cantera::cantera=2.6.0
+    - conda-forge::python=3.8
+    - conda-forge::numpy
+    - conda-forge::scipy
+    - conda-forge::matplotlib
+    - conda-forge::pandas
+    - conda-forge::pytest
+    - conda-forge::pytest-cov
+    - conda-forge::pylint
+    - conda-forge::pypdf2
+    #- rdkit::rdkit=2020.09.1.0
+    - rdkit::rdkit
+    - anaconda::graphviz
+    #- anaconda::graphviz=2.50.0
+    # Note: haven't tested this with the graphviz line
+    - pip:
+      - openpyxl
