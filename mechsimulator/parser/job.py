@@ -1,4 +1,5 @@
 import pandas as pd
+import yaml
 
 # Allowed job_types and their required sheet types
 ALLOWED_JOB_TYPES = {
@@ -12,6 +13,37 @@ ALLOWED_SHEET_TYPES = {
 }
 
 
+# Uncomment to use Yaml
+def read_sheet(job_data, sheet_type):
+    # Define required data for the given sheet type
+    reqd_data = ALLOWED_SHEET_TYPES[sheet_type]
+
+    # Use job_file to get the relevant section (it's actually the YAML data)
+    sheet_data = job_data.get(sheet_type, {})  # Gets everything for the sheet_type (exp or mech) out of the yaml file into sheet_data
+
+    # Check that required data are present
+    for reqd_datum in reqd_data:
+        assert reqd_datum in sheet_data, (
+            f"In job data, required datum '{reqd_datum}' is missing from "
+            f"section {sheet_type}."
+        )
+
+    # Initialize sheet_dct
+    sheet_dct = {}
+    if sheet_type == 'mech':            # if on a mechanism sheet, add kwarg_dct field
+        sheet_dct['kwarg_dct'] = {}     # Stores optional fields
+
+    # Store values in the sheet_dct
+    for key, vals in sheet_data.items():        # Loops through each key, value pair in sheet_data
+        if key in reqd_data:
+            sheet_dct[key] = vals               # Add required fields
+        elif sheet_type == 'mech':
+            sheet_dct['kwarg_dct'][key] = vals
+
+    return sheet_dct
+
+
+# Uncomment for Yaml
 def load_job(job_file, job_type):
 
     print(f"Reading job file '{job_file}'...")
@@ -22,44 +54,18 @@ def load_job(job_file, job_type):
         f"{ALLOWED_JOB_TYPES.keys()}")
     sheet_types = ALLOWED_JOB_TYPES[job_type]
 
-    # Loop over each sheet and read it, storing in the job_dct
-    job_dct = {'job_type': job_type}  # initialize with the job type
-    #sheet_names = pd.ExcelFile(job_file).sheet_names
-    sheet_names = pd.ExcelFile(job_file, engine='openpyxl').sheet_names
+    # Load the YAML file
+    with open(job_file, 'r') as f:     # Opens the yaml file in read mode and ensures that it is closed properly
+        job_data = yaml.safe_load(f)   # Puts everything from the file into a dictionary using only simple (safe) data structures that a yaml file would typically contain
+
+    job_dct = {'job_type': job_type}  # Initialize with the job type
+
+    # Loop over each sheet type and read it, storing in job_dct
     for sheet_type in sheet_types:
-        assert sheet_type in sheet_names, (
-            f"In job file '{job_file}', sheet name '{sheet_type} missing. This "
+        assert sheet_type in job_data, ( 
+            f"In job file '{job_file}', sheet '{sheet_type}' is missing. This "
             f"is required for job_type '{job_type}'")
-        sheet_dct = read_sheet(job_file, sheet_type)
+        sheet_dct = read_sheet(job_data, sheet_type) 
         job_dct.update(sheet_dct)
 
     return job_dct
-
-
-def read_sheet(job_file, sheet_type):
-
-    # Define required data and read Excel file
-    reqd_data = ALLOWED_SHEET_TYPES[sheet_type]
-    df = pd.read_excel(job_file, sheet_name=sheet_type, header=0,
-                       engine='openpyxl')
-
-    # Check that required data are present
-    for reqd_datum in reqd_data:
-        assert reqd_datum in df, (
-            f"In job file '{job_file}', reqd datum '{reqd_datum}' missing from "
-            f"sheet {sheet_type}.")
-
-    # Initialize sheet_dct
-    sheet_dct = {}
-    if sheet_type == 'mech':  # if on a mechanism sheet, add kwarg_dct field
-        sheet_dct['kwarg_dct'] = {}
-
-    # Read each column and store values in the sheet_dct
-    for col in df.columns:
-        vals = list(df[col])
-        if col in reqd_data:
-            sheet_dct[col] = vals
-        elif sheet_type == 'mech':
-            sheet_dct['kwarg_dct'][col] = vals
-
-    return sheet_dct
