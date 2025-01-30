@@ -1,0 +1,9 @@
+PROJECT_NAME           = "MechSimulator"
+OUTPUT_DIRECTORY       = docs
+INPUT                  = .\mechsimulator
+RECURSIVE              = YES
+GENERATE_LATEX         = NO
+EXTRACT_ALL            = YES
+HAVE_DOT               = YES
+UML_LOOK               = YES
+FILTER_PATTERNS        = *.py=py_filter
