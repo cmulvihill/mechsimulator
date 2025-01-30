@@ -57,13 +57,17 @@ ALLOWED_UNITS = {
 
 # Mappings for alternate names (keys) to their physical quantities (values)
 ALTERNATE_NAMES = {
-    'path_length':  'length',
-    'end_time':     'time',
-    'res_time':     'time',
-    'idt':          'time',
-    'timestep':     'time',
-    'lfs':          'velocity',
-    'v_of_t':       'vol',
+    'path_length':          'length',
+    'end_time':             'time',
+    'res_time':             'time',
+    'idt':                  'time',
+    'timestep':             'time',
+    'lfs':                  'velocity',
+    'v_of_t':               'vol',
+    'x_profile':            'length',
+    't_profile':            'temp',
+    't_profile_setpoints':  'temp',
+    'half_life':            'time',
 }
 
 # Params in the 'plot' field of the 'info' sheet that should be in list form
@@ -146,7 +150,7 @@ def read_info_sheet_new(fname):
             elif group == 'spc':
                 _spc(row, exp_set)
             elif group == 'sim_opts':
-                pass  # need to add this later once I figure out what it does
+                _sim_opts(row, exp_set)
             elif group == 'ignore_row':
                 pass
         else:
@@ -316,6 +320,20 @@ def _plot(row, exp_set_or_obj):
         # Use the plotting variable as the quantity
         fake_param = exp_set_or_obj['plot']['variable'][0]  # e.g., 'temp'
         conv_val = convert_units(raw_val, fake_param, units)
+    elif param in ('t_profile'):
+        raw_val = _time_series(row, sheet_type='info', value_and_series=True)    
+        conv_val = convert_units(raw_val, param, units)
+        # Either create the setpoints entry or append to it
+        if exp_set_or_obj['plot'].get('t_profile_setpoints') is None:
+            exp_set_or_obj['plot']['t_profile_setpoints'] = [conv_val[0]]  # only first
+        else: 
+           exp_set_or_obj['plot']['t_profile_setpoints'].append(conv_val[0])
+        # Either create the t_profile entry or append to it
+        if exp_set_or_obj['plot'].get('t_profile') is None:
+            exp_set_or_obj['plot']['t_profile'] = [conv_val[1]]  # only first
+        else: 
+           exp_set_or_obj['plot']['t_profile'].append(conv_val[1])
+            
     # If on any other variable
     else:
         # Check if the row contains a time series, then convert units
@@ -332,7 +350,8 @@ def _plot(row, exp_set_or_obj):
     elif param in LIST_PARAMS:
         conv_val = [conv_val]
     # Store (set bound info to None; don't use fake_param)
-    exp_set_or_obj['plot'][param] = (conv_val, None, None, None, units)
+    if param != 't_profile':  # don't do for t_profile; handled above
+        exp_set_or_obj['plot'][param] = (conv_val, None, None, None, units)
 
 
 def _plot_format(row, exp_set):
@@ -378,7 +397,16 @@ def _spc(row, exp_set):
     exp_set['spc'][spc] = spc_dct
 
 
-def _time_series(row, sheet_type='exp'):
+def _sim_opts(row, exp_set):
+
+    _, param, raw_val, units = row[:4]
+    # Check if the row contains a time series, then convert units
+    raw_val = _time_series(row, sheet_type='info')
+    conv_val = convert_units(raw_val, param, units)
+    exp_set['sim_opts'][param] = conv_val
+
+
+def _time_series(row, sheet_type='exp', value_and_series=False):
     """ Checks if a row has a time series. The returned value will be either
         a time series (numpy array) with a certain number of datapoints or a
         single value
@@ -391,8 +419,14 @@ def _time_series(row, sheet_type='exp'):
     raw_val = row[2]
     ncols = NEXP_COLS if sheet_type == 'exp' else NINFO_COLS
 
+    # If there is a value AND a series, read both
+    if value_and_series:
+        npoints = len(row) - ncols  # num of time-resolved datapoints
+        series = np.zeros(npoints)
+        series[:] = row[ncols:] 
+        val = [raw_val, series]
     # If raw_val is blank, assume the row contains a time series
-    if util.chk_entry(raw_val) is None:
+    elif util.chk_entry(raw_val) is None:
         npoints = len(row) - ncols  # num of time-resolved datapoints
         val = np.zeros(npoints)
         val[:] = row[ncols:]
@@ -486,6 +520,17 @@ def get_exp_data(exp_set):
                 else:
                     exp_ydata[cond_idx, idt_idx] = np.nan
 
+    elif meas_type == 'half_life':
+        # Get the xdata
+        exp_xdata = np.ndarray((len(exp_objs),))
+        for cond_idx, exp_obj in enumerate(exp_objs):
+            exp_xdata[cond_idx] = exp_obj['conds'][plot_var][0]
+        # Get the ydata
+        ntargs = 1  # I guess I'm limiting myself to one half-life for now...
+        exp_ydata = np.ndarray((nconds, ntargs))
+        for cond_idx, exp_obj in enumerate(exp_objs):
+            exp_ydata[cond_idx] = exp_obj['result']['half_life'][0]
+
     elif meas_type == 'conc':
         # Get the xdata
         exp_xdata = get_unique_times(exp_set)
@@ -544,7 +589,7 @@ def get_exp_data(exp_set):
 
 
 # --------------------------- Misc. helper functions ---------------------------
-def convert_units(val, quant, units):
+def convert_units(raw_val, quant, units):
     """ Converts a value of some physical quantity in specified units to
         desired internal units
 
@@ -555,8 +600,8 @@ def convert_units(val, quant, units):
             simply a time. These alternate names are defined by the variable
             ALTERNATE_NAMES.
 
-        :param val: the value of some physical dimension (e.g., 1.04)
-        :type val: float or Numpy array of shape (nvals,)
+        :param raw_val: the value of some physical dimension (e.g., 1.04)
+        :type raw_val: float or Numpy array of shape (nvals,)
         :param quant: the physical quantity that is quantified by val
             (e.g., 'pressure')
         :type quant: str
@@ -565,15 +610,30 @@ def convert_units(val, quant, units):
         :return conv_val: val that has been converted to desired internal units
         :rtype: float
     """
+    def convert_value(val, quant, units, conv_factor):
+
+        # Check for special cases
+        if quant == 'temp' and units == 'C':  # Celsius
+            single_conv_val = val + 273.15
+        elif quant == 'temp' and units == 'F':  # Fahrenheit
+            single_conv_val = (val - 32) / 1.8 + 273.15
+        elif quant == 'conc' and units == 'molec/cm3':  # number density
+            single_conv_val = val
+
+        # Otherwise, use the conversion factor
+        else:
+            single_conv_val = val * conv_factor
+
+        return single_conv_val
 
     # If the units are blank or '-', don't convert
     chkd_entry = util.chk_entry(units)
     if chkd_entry is None:
         # Check if the quantity should have units assigned
-        if val != 'bal' and quant != 'phi':  # 'bal' = 'conc' but needs no units
+        if raw_val != 'bal' and quant != 'phi':  # 'bal' = 'conc' but needs no units
             assert quant not in ALLOWED_UNITS.keys() and quant not in \
                 ALTERNATE_NAMES.keys(), f"The quantity '{quant}' requires units"
-        conv_val = val  # no conversion if units are blank or '-'
+        conv_val = raw_val  # no conversion if units are blank or '-'
 
     # Otherwise, convert the units
     else:
@@ -594,17 +654,16 @@ def convert_units(val, quant, units):
         units_idx = allowed_units.index(units)
         conv_factor = conv_factors[units_idx]
 
-        # Check for special cases
-        if quant == 'temp' and units == 'C':  # Celsius
-            conv_val = val + 273.15
-        elif quant == 'temp' and units == 'F':  # Fahrenheit
-            conv_val = (val - 32) / 1.8 + 273.15
-        elif quant == 'conc' and units == 'molec/cm3':  # number density
-            conv_val = val
-
-        # Otherwise, use the conversion factor
+        # Deal with the unusual case when raw value is a list containing a single value paired with an array
+        if isinstance(raw_val, list) and isinstance(raw_val[0], int) and \
+            isinstance(raw_val[1], np.ndarray):
+            conv_val = []
+            # Call the convert_value subfunction
+            conv_val.append(convert_value(raw_val[0], quant, units, conv_factor))
+            conv_val.append(convert_value(raw_val[1], quant, units, conv_factor))
+        # Normal case when it's just a single entry
         else:
-            conv_val = val * conv_factor
+            conv_val = convert_value(raw_val, quant, units, conv_factor)
 
     return conv_val
 

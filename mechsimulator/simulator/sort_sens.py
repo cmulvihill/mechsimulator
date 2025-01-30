@@ -113,11 +113,11 @@ def sort_single_mech(mech_sens, gas):
             :rtype: Numpy.ndarray of shape (nrxns, nconds, ntargs) if
                 time-resolved or (nrxns, ntargs)
         """
-        # Get the max values along one axis
+        # Get the max values along one axis (replace NaNs with 0; no warnings)
         if np.ndim(mech_sens) == 4:  # time-resolved
-            max_vals = np.nanmax(abs(mech_sens), axis=3)  # axis 3 is time
+            max_vals = np.max(abs(np.nan_to_num(mech_sens)), axis=3)  # 3 is time
         else:  # ndims = 3; not time-resolved
-            max_vals = np.nanmax(abs(mech_sens), axis=1)  # axis 1 is condition
+            max_vals = np.max(abs(np.nan_to_num(mech_sens)), axis=1)  # 1 is cond
         # Although np.nanmax (used above) will prioritize numeric values over
         # NaNs, a reaction could have all NaNs if the reaction is absent from
         # the mech. So, replace NaNs with 0 before sorting to keep NaNs at end

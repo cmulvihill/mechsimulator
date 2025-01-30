@@ -237,7 +237,7 @@ def get_mech_info(exp_set, calc_type, x_src, cond_src, gases):
         x_titles = (cond_titles, None, None)
         xdata = times
     elif meas_type == 'conc':
-        targs = list(exp_set['spc'].keys())
+        targs = list(exp_set['spc'].keys()) + ['T_of_t']
         times = get_times(exp_set, x_src)
         shape = (len(conds), len(targs), len(times))
         x_arrays = (conds, targs, times)
@@ -256,6 +256,12 @@ def get_mech_info(exp_set, calc_type, x_src, cond_src, gases):
         x_arrays = (conds, targs)
         x_titles = (cond_titles, targ_titles)
         xdata = conds
+    elif meas_type == 'half_life':
+        targs = exp_set['plot']['target_spc'][0]  # only one
+        shape = (len(conds), 1)
+        x_arrays = (conds, targs)
+        x_titles = (cond_titles, targs)
+        xdata = conds
     elif meas_type == 'outlet':
         targs = list(exp_set['spc'].keys())
         shape = (len(conds), len(targs))
@@ -269,7 +275,7 @@ def get_mech_info(exp_set, calc_type, x_src, cond_src, gases):
         x_titles = (cond_titles, targs)
         xdata = conds
     else:  # meas_type == 'ion':
-        raise NotImplementedError("'ion' is not implemented yet")
+        raise NotImplementedError(f"The meas_type '{meas_type}' is not implemented yet")
 
     # If the calculation type is sensitivity or rate of production, add some 
     # information about the reactions

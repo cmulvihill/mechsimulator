@@ -242,6 +242,16 @@ def get_conds_dct(exp_set, mech_spc_dct, cond_src, gas, mech_opts=None):
             idt_targs.extend(idt_targ)  # extend b/c adding list to list
         conds_dct['idt_targ'] = idt_targs
 
+    # Add the T(x) information
+    if plot_dct.get('t_profile') is not None:
+        conds_dct['x_profile'] = plot_dct['x_profile']
+        conds_dct['t_profile'] = plot_dct['t_profile']
+        conds_dct['t_profile_setpoints'] = plot_dct['t_profile_setpoints']
+    elif conds_dct.get('x_profile') is not None:  # need to remove if was created (i.e., if on PFR) but not used
+        conds_dct.pop('x_profile')
+        conds_dct.pop('t_profile')
+        conds_dct.pop('t_profile_setpoints')
+
     # Add the active species
     if meas_type in ('abs', 'emis'):  # should 'ion' be here also?
         conds_dct['active_spc'] = exp_set['plot']['active_spc']
@@ -249,6 +259,9 @@ def get_conds_dct(exp_set, mech_spc_dct, cond_src, gas, mech_opts=None):
     # Add the wavelengths
     if meas_type in ('abs', 'emis'):
         conds_dct['wavelength'] = exp_set['plot']['wavelength']
+
+    if meas_type == 'half_life':
+        conds_dct['half_life_targ'] = exp_set['plot']['target_spc']
 
     return conds_dct
 
@@ -356,8 +369,6 @@ def check_spcs(exp_set, mech_spc_dct, gas):
     # Load some initial data
     rename_instr = util.get_rename_instr(mech_spc_dct, exp_set['spc'])
     meas_type = exp_set['overall']['meas_type']
-    print('exp_set: ', exp_set)
-    print('mech_spc_dct: ', mech_spc_dct)
 
     # Check the info sheet to see if any of the mix species are undefined
     info_mix = exp_set['mix']

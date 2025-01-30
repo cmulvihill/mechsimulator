@@ -5,7 +5,7 @@ from mechsimulator.parser.exp import ALLOWED_UNITS
 
 
 def build_pdf(figs_axes, filename='output.pdf', path=None):
-    """ Produce a PDF with one reaction per page
+    """ Produce a PDF 
 
         :param figs_axes: list of pairs of figure and axis objects
         :type figs_axes: list [(fig1, axis1), ...]
@@ -39,9 +39,9 @@ def get_targ_titles(exp_set, yunit=None):
     elif meas_type == 'ion':
         raise NotImplementedError("The 'ion' measurement type is not working.")
     elif meas_type in ('conc', 'outlet'):
-        targ_titles = list(exp_set['spc'].keys())
+        targ_titles = list(exp_set['spc'].keys()) + ['Temperature(t)']
         yunit = yunit or ''
-        ylabel = f'Mole fraction ({yunit})'
+        ylabel = f'Mole fraction ({yunit}) or Temperature (K)'
         yquant = 'conc'
     elif meas_type == 'pressure':
         targ_titles = None
@@ -64,6 +64,12 @@ def get_targ_titles(exp_set, yunit=None):
         yunit = yunit or 'cm/s'
         ylabel = f'Laminar flame speed ({yunit})'
         yquant = 'lfs'
+    elif meas_type == 'half_life':
+        targ_titles = ['',]
+        targ_titles = [exp_set['plot']['target_spc'][0]]
+        yunit = yunit or 's'
+        ylabel = f'Half life ({yunit})'
+        yquant = 'half_life'
     else:
         raise NotImplementedError(f'meas_type {meas_type} not implemented')
 
@@ -104,13 +110,15 @@ def get_cond_titles(exp_set, cond_src, xunit=None):
         xquant = 'time'
 
     # If on a non-time-resolved measurement
-    elif meas_type in ('idt', 'outlet', 'lfs'):
+    elif meas_type in ('idt', 'outlet', 'lfs', 'half_life'):
         if meas_type == 'idt':
             cond_titles = ['Ignition delays']
         elif meas_type == 'outlet':
             cond_titles = ['Outlet concentrations']
         elif meas_type == 'lfs':
             cond_titles = ['Laminar flame speeds']
+        elif meas_type == 'half_life':
+            cond_titles = ['Half life']
         if xunit is None:  # if no xunit given...
             xunit = ALLOWED_UNITS[plot_var][0][0]  # ...use the default unit
         xlabel = ALLOWED_UNITS[plot_var][2] + f' ({xunit})'

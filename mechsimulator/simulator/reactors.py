@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.interpolate import RegularGridInterpolator
 import cantera as ct
 
 
@@ -66,6 +67,8 @@ def st(temp, pressure, mix, gas, targ_spcs, end_time, p_of_t=None):
     wall.heat_transfer_coeff = 0  # no heat transfer considerations for ST
     wall.set_velocity(_wall_velocity)
     network = ct.ReactorNet([reac])
+    #network.atol = 1e-20
+    #network.rtol = 1e-15
     # network.set_max_time_step(np.max(np.diff(v_of_t[0, :])))
 
     # Run the simulation
@@ -173,7 +176,8 @@ def rcm(temp, pressure, mix, gas, targ_spcs, end_time, v_of_t):
 
 
 def pfr(temp, pressure, mix, gas, targ_spcs, mdot, area, length,
-        res_time=None, n_steps=2000):
+        res_time=None, n_steps=2000, x_profile=None, t_profile=None,
+        t_profile_setpoints=None):
     """ Runs a plug flow reactor simulation
 
         :param temp: reactor inlet temperature (Kelvin)
@@ -207,7 +211,18 @@ def pfr(temp, pressure, mix, gas, targ_spcs, mdot, area, length,
         :rtype: Numpy array of shape (num_times,)
     """
 
-    gas = _set_state(gas, temp, pressure, mix)
+    # Set the initial gas state
+    if x_profile is not None:  # use T profile if given
+        # Create the 2D array
+        t_data = np.ndarray((len(x_profile[0]), len(t_profile_setpoints)))
+        for idx, array in enumerate(t_profile):
+            t_data[:, idx] = array
+        # Create the interp object and interp (note: the [0] gets rid of uncertainties)
+        interp = RegularGridInterpolator((x_profile[0], t_profile_setpoints), t_data)
+        start_temp = interp((0, temp))
+        gas = _set_state(gas, start_temp, pressure, mix)
+    else:  # otherwise, just use the given, fixed T
+        gas = _set_state(gas, temp, pressure, mix)
 
     # Create reactor and reactor network
     reac = ct.IdealGasConstPressureReactor(gas)
@@ -239,14 +254,23 @@ def pfr(temp, pressure, mix, gas, targ_spcs, mdot, area, length,
             end_idx = idx
             break
 
+        # If a T profile was given, update the temperature
+        if t_profile is not None:
+            new_temp = interp((positions[idx], temp))  # use *given* T to get profile
+            thermo = reac.thermo
+            thermo.TPX = new_temp, thermo.TPX[1], thermo.TPX[2]
+            reac.insert(thermo)
+            network.reinitialize()
+
     # Removed unused entries in time and position
     times = times[:(end_idx + 1)]
     positions = positions[:(end_idx + 1)]
 
     # Get results for target species
-    targ_concs = np.zeros((len(targ_spcs), end_idx + 1))
+    targ_concs = np.full((len(targ_spcs), end_idx + 1), np.nan)
     for idx, targ_spc in enumerate(targ_spcs):
-        targ_concs[idx, :] = states.X[:, gas.species_index(targ_spc)]
+        if targ_spc is not None:
+            targ_concs[idx, :] = states.X[:, gas.species_index(targ_spc)]
 
     end_gas = gas
     rop = None

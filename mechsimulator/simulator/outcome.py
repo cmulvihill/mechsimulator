@@ -254,7 +254,7 @@ def st(conds_dct, gas, meas_type, xdata, ydata_shape):
         mech_ydata[cond_idx] = process_st(
             raw_concs, raw_pressures, raw_temps, raw_times, conds_dct, cond_idx,
             meas_type, xdata)
-
+    
     return mech_ydata
 
 
@@ -275,7 +275,10 @@ def process_st(raw_concs, raw_pressures, raw_temps, raw_times, conds_dct,
 
     if meas_type == 'conc':
         # Simply interpolate the raw concentrations to fit the uniform times
-        cond_ydata = util.interp(raw_concs, raw_times, uniform_times)
+        concs = util.interp(raw_concs, raw_times, uniform_times)
+        T_of_t = util.interp(raw_temps, raw_times, uniform_times)
+        cond_ydata = np.append(concs, T_of_t[np.newaxis, :], axis=0)
+        # cond_ydata = util.interp(raw_concs, raw_times, uniform_times)
 
     elif meas_type == 'idt':
         # Load information from conds_dct
@@ -295,6 +298,11 @@ def process_st(raw_concs, raw_pressures, raw_temps, raw_times, conds_dct,
             if warnings:
                 print(f'Warning: {warnings} was returned for ST IDT simulation')
             cond_ydata[targ_idx] = idt
+    elif meas_type == 'half_life':
+        all_spcs = conds_dct['targ_spcs']
+        target_spc = conds_dct['half_life_targ'][0]  
+        spc_idx = all_spcs.index(target_spc)  # idx of spc in targets
+        cond_ydata = get_half_life(raw_concs[spc_idx], raw_times)
     elif meas_type == 'abs':
         # Load information from conds_dct
         active_spcs = conds_dct['active_spc']
@@ -347,6 +355,9 @@ def pfr(conds_dct, gas, meas_type, xdata, ydata_shape):
     lengths = conds_dct['length']
     res_times = conds_dct['res_time']
     targ_spcs = conds_dct['targ_spcs']
+    x_profile = conds_dct.get('x_profile')
+    t_profile = conds_dct.get('t_profile')
+    t_profile_setpoints = conds_dct.get('t_profile_setpoints')
 
     # Loop over all conditions
     dtype = 'object' if meas_type == 'pathways' else 'float'
@@ -355,7 +366,8 @@ def pfr(conds_dct, gas, meas_type, xdata, ydata_shape):
         raw_concs, raw_times, raw_positions, rop, end_gas = reactors.pfr(
             temps[cond_idx], pressures[cond_idx], mixes[cond_idx], gas,
             targ_spcs, mdots[cond_idx], areas[cond_idx], lengths[cond_idx],
-            res_time=res_times[cond_idx])
+            res_time=res_times[cond_idx], x_profile=x_profile, t_profile=t_profile,
+            t_profile_setpoints=t_profile_setpoints)
         # Process raw results
         mech_ydata[cond_idx] = process_pfr(raw_concs, raw_times, raw_positions,
                                            rop, end_gas, meas_type)
@@ -525,3 +537,16 @@ def st_idt(targ, times, method='baseline_extrap', plot=False):
         idt = np.nan
 
     return idt, warnings
+
+
+def get_half_life(conc, times):
+
+    half_value = conc[0] / 2
+    index = np.abs(conc - half_value).argmin()
+    half_life = times[index]
+
+    # Return NaN if half value not reached
+    if half_value < np.min(conc):
+        half_life = np.nan
+
+    return half_life

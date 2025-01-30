@@ -17,14 +17,15 @@ REAC = {
     'free_flame':   'Free flame',
 }
 MEAS = {
-    'abs':      'Absorption',
-    'emis':     'Emission',
-    'conc':     'Concentration',
-    'ion':      'Ion',
-    'pressure': 'Pressure',
-    'idt':      'IDT',
-    'outlet':   'Outlet',
-    'lfs':      'Flame speed',
+    'abs':          'Absorption',
+    'emis':         'Emission',
+    'conc':         'Concentration',
+    'ion':          'Ion',
+    'pressure':     'Pressure',
+    'idt':          'IDT',
+    'outlet':       'Outlet',
+    'lfs':          'Flame speed',
+    'half_life':    'Half-life',
 }
 
 
@@ -473,7 +474,7 @@ def _mech_frmt(exp_set, set_frmt, conds_src, mech_idx=None):
     _, _, yquant = util.get_targ_titles(exp_set)
     mech_frmt['xconv'] = get_conv_factors(xunit, xquant)
     mech_frmt['yconv'] = get_conv_factors(yunit, yquant)
-    if exp_set['overall']['meas_type'] == 'idt':
+    if exp_set['overall']['meas_type'] in ('idt', 'half_life'):
         mech_frmt['xconv'] = 'inv'  # so that inverse temp can be plotted
 
     # Get color, marker, and order; depends on whether simulation or experiment

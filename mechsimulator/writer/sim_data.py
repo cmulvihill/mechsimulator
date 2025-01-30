@@ -36,7 +36,8 @@ def write_mech_results(exp_set, mech_results, mech_nicknames=None):
                 mech_result_df.to_excel(writer, header=target_spcs)
 
 
-def write_mech_results_time(exp_set, mech_results, xdata, mech_nicknames=None):
+def write_mech_results_time(exp_set, mech_results, xdata, cond_src,
+                            mech_nicknames=None):
     """
 
     :param exp_set:
@@ -48,7 +49,7 @@ def write_mech_results_time(exp_set, mech_results, xdata, mech_nicknames=None):
     nmechs, nconds, nspcs, ntimes = np.shape(mech_results)
     descr = exp_set['overall']['description']
     target_spcs = list(exp_set['spc'].keys())
-    cond_titles, _, _ = plot_util.get_cond_titles(exp_set, 'plot')
+    cond_titles, _, _ = plot_util.get_cond_titles(exp_set, cond_src)
     mech_nicknames = [f'mech{mech_idx + 1}' for mech_idx in range(nmechs)] or \
         mech_nicknames
     assert nmechs == len(mech_nicknames)

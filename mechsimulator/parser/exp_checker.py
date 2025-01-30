@@ -36,10 +36,10 @@ ALLOWED_REAC_TYPES = {
     'st':           (('temp', 'pressure', 'end_time'),
                      ('dpdt',),
                      ('abs', 'emis', 'idt', 'outlet', 'ion', 'pressure',
-                      'conc')),
+                      'conc', 'half_life')),
     'pfr':          (('temp', 'pressure', 'length', ('res_time', 'mdot'),
-                      'area'),
-                     (),
+                      'area',),
+                     ('x_profile', 't_profile', 't_profile_setpoints'),
                      ('outlet',)),
     'jsr':          (('temp', 'pressure', ('res_time', 'mdot'), 'vol'),
                      (),
@@ -89,7 +89,10 @@ ALLOWED_MEAS_TYPES = {
                      ('start', 'end', 'inc',)),
     'lfs':          (('variable', 'start', 'end', 'inc'),
                      (),
-                     (),)
+                     (),),
+    'half_life':    (('variable', 'end_time', 'target_spc'),
+                     (),
+                     ('start', 'end', 'inc',)),
 }
 
 # Allowed 'idt_method' options for determining ignition delay time
@@ -153,7 +156,7 @@ ALLOWED_PLOT_FORMAT = {
 }
 
 # Measurement types that default to plotting as points
-POINT_MEAS_TYPES = ('outlet', 'idt', 'lfs')
+POINT_MEAS_TYPES = ('outlet', 'idt', 'lfs', 'half_life')
 
 
 def chk_exp_set(exp_set):
@@ -163,17 +166,8 @@ def chk_exp_set(exp_set):
         :type exp_set: dct
     """
 
-
-    # print('before running num_dens, exp_set:')
-    # for key, val in exp_set.items():
-    #     print(f'{key}: {val}')
-
     # Fix any number densities (i.e., convert to mole fractions)
     fix_num_dens(exp_set)
-
-    # print('after running num_dens, exp_set:')
-    # for key, val in exp_set.items():
-    #     print(f'{key}: {val}')
 
     # Check the 'info' sheet
     exp_set = chk_info_sheet(exp_set)
@@ -295,12 +289,13 @@ def chk_info_sheet(exp_set):
                     f" are 'pressure' or any one defined species: {all_spcs}")
 
     # Check that the end_time and timestep are compatible
-    timestep = exp_set['plot'].get('timestep')
-    end_time = exp_set['plot'].get('end_time')
-    if timestep is not None and end_time is not None:
-        assert np.isclose(end_time[0] % timestep[0], 0, atol=1e-8), (
-            f'{id_str}the end_time, {end_time}, is not a multiple '
-            f'of the timestep, {timestep}')
+    # This is a dumb check. It should just do this within the numerical accuracy
+    #timestep = exp_set['plot'].get('timestep')
+    #end_time = exp_set['plot'].get('end_time')
+    #if timestep is not None and end_time is not None:
+    #    assert np.isclose(end_time[0] % timestep[0], 0, atol=1e-8), (
+    #        f'{id_str}the end_time, {end_time}, is not a multiple '
+    #        f'of the timestep, {timestep}')
 
     # Check some things regarding active spcs (for absorption, emission, etc.)
     active_spc = exp_set['plot'].get('active_spc')

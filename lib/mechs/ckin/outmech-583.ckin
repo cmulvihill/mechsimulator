@@ -602,14 +602,12 @@ END
 REACTIONS     CAL/MOLE     MOLES
 
 H2 +M = H + H +M                                                           4.577E+19    -1.400   104400  ! submech_del.pes  CORE.1
-DUP
 
 OHV = OH                                                                   1.400E+06     0.000        0  ! submech_del.pes  CORE.2
 
 OHV + AR = OH + AR                                                         2.170E+10     0.500     2060  ! submech_del.pes  CORE.2
 
 O + H +M = OH +M                                                           4.714E+18    -1.000        0  ! submech_del.pes  CORE.2
-DUP
 
 H + O +M = OHV +M                                                          4.430E+14     0.000    10000  ! submech_del.pes  CORE.2
 
@@ -656,7 +654,6 @@ H2O2 (+M) = OH + OH (+M)                                                   2.000
 H + O2 + H = OH + OH                                                       4.000E+22    -1.835      800  ! submech_del.pes  CORE.7
 
 H + O2 + H = H2 + O2                                                       8.800E+22    -1.835      800  ! submech_del.pes  CORE.7
-DUP
 
 OHV + H2O = OH + H2O                                                       5.920E+12     0.500     -860  ! submech_del.pes  CORE.8
 
@@ -669,7 +666,6 @@ OHV + O2 = OH + O2                                                         2.100
 HO2 + O = OH + O2                                                          3.250E+13     0.000        0  ! submech_del.pes  CORE.9
 
 H + O2 + O = OH + O2                                                       7.350E+22    -1.835      800  ! submech_del.pes  CORE.9
-DUP
 
 OH + HO2 = H2O + O2                                                        1.930E+20    -2.490      584  ! submech_del.pes  CORE.10
   DUP
@@ -6711,8 +6707,8 @@ C2H3 + C2H2 = C4H4 + H                                                     2.000
 C4H6 = CH3 + C3H3                                                          1.000E+00     0.000        0  ! submech_del.pes  CORE.123
   PLOG /                                                       3.947E-02   1.585E+148  -37.240   188500 /
   PLOG /                                                       7.895E-02   8.913E+159  -40.320   201300 /
-!  PLOG /                                                       1.579E-01   5.248E+196  -50.000   243600 /
-!  PLOG /                                                       3.158E-01   4.074E+196  -50.000   241400 /
+  PLOG /                                                       1.579E-01   5.248E+196  -50.000   243600 /
+  PLOG /                                                       3.158E-01   4.074E+196  -50.000   241400 /
 
 C4H6 = C4H6-2                                                              1.000E+00     0.000        0  ! submech_del.pes  CORE.123
   PLOG /                                                       3.947E-02   2.344E+73   -17.490   108500 /

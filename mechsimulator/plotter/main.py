@@ -48,9 +48,10 @@ def mult_sets(exp_sets, gases, mech_spc_dcts, calc_types, x_srcs,
     """
 
     # Initialize figure list
-    figs_axes = _header_pgs(exp_sets, gases, calc_types, x_srcs,
-                            cond_srcs, mech_opts_lst=mech_opts_lst,
-                            headers=headers)
+    #figs_axes = _header_pgs(exp_sets, gases, calc_types, x_srcs,
+    #                        cond_srcs, mech_opts_lst=mech_opts_lst,
+    #                        headers=headers)
+    figs_axes = []
     # Loop over each experimental set
     for idx, exp_set in enumerate(exp_sets):
         set_figs_axes = single_set(
@@ -84,10 +85,17 @@ def single_set(exp_set, gases, mech_spc_dcts, calc_type, x_src,
         figs_axes = outcome.single_set(set_ydata, set_xdata, exp_set,
                                        cond_src, mech_opts_lst=mech_opts_lst)
         # Send the data to the writer
-        if exp_set['overall']['meas_type'] in parser.exp_checker.POINT_MEAS_TYPES:
-            writer.sim_data.write_mech_results(exp_set, set_ydata)
-        else:
-            writer.sim_data.write_mech_results_time(exp_set, set_ydata, set_xdata)
+        # EDIT: just writing to .npy files for now...
+        source = exp_set['overall']['source']
+        description = exp_set['overall']['description']
+        np.save(f'results_{source}_{description}.npy', set_ydata)
+        np.save(f'results_xdata_{source}_{description}.npy', set_xdata)
+        # this is broken...
+        #if exp_set['overall']['meas_type'] in parser.exp_checker.POINT_MEAS_TYPES:
+        #    writer.sim_data.write_mech_results(exp_set, set_ydata)
+        #else:
+        #    writer.sim_data.write_mech_results_time(
+        #        exp_set, set_ydata, set_xdata, cond_src)
 
     elif calc_type == 'sens':
         # Calculate the sensitivity coefficients
@@ -107,6 +115,8 @@ def single_set(exp_set, gases, mech_spc_dcts, calc_type, x_src,
             exp_set, gases, mech_spc_dcts, 'outcome', x_src, cond_src,
             mech_opts_lst=mech_opts_lst)
         # Plot the data
+        np.save('sens.npy', sorted_set_sens)
+        np.save('sens_xdata.npy', set_xdata)
         figs_axes = sens.single_set(sorted_set_sens[:, :NRXNS],
                                     set_xdata,
                                     sorted_set_rxns[:, :NRXNS],
@@ -117,8 +127,8 @@ def single_set(exp_set, gases, mech_spc_dcts, calc_type, x_src,
         else:
             targs = exp_set['spc'].keys()
         # targs = ['pressure',]
-        writer.new_sens.mult_mechs(sorted_set_sens, sorted_set_rxns, targs,
-                                   set_xdata, set_ref_results)
+        #writer.new_sens.mult_mechs(sorted_set_sens, sorted_set_rxns, targs,
+        #                           set_xdata, set_ref_results)
 
     elif calc_type == 'pathways':
         # Obtain the end states of each simulation; has shape (nmechs, nconds)
