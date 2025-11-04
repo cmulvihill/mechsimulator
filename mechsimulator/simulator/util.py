@@ -262,6 +262,12 @@ def get_mech_info(exp_set, calc_type, x_src, cond_src, gases):
         x_arrays = (conds, targs)
         x_titles = (cond_titles, targs)
         xdata = conds
+    elif meas_type == 'peak':
+        targs = exp_set['plot']['target_spc'][0]  # only one
+        shape = (len(conds), 1)
+        x_arrays = (conds, targs)
+        x_titles = (cond_titles, targs)
+        xdata = conds
     elif meas_type == 'outlet':
         targs = list(exp_set['spc'].keys())
         shape = (len(conds), len(targs))

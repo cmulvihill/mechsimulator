@@ -67,8 +67,8 @@ def st(temp, pressure, mix, gas, targ_spcs, end_time, p_of_t=None):
     wall.heat_transfer_coeff = 0  # no heat transfer considerations for ST
     wall.set_velocity(_wall_velocity)
     network = ct.ReactorNet([reac])
-    #network.atol = 1e-20
-    #network.rtol = 1e-15
+    # network.atol = 1e-20
+    # network.rtol = 1e-15
     # network.set_max_time_step(np.max(np.diff(v_of_t[0, :])))
 
     # Run the simulation

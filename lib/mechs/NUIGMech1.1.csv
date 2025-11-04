@@ -1,8 +1,0 @@
-name,smiles,mult,exc_flag
-C4H10,CCCC,1,0
-O2,O=O,3,0
-N2,N#N,1,0
-HE,[He],1,0
-CO,[C]=O,1,0
-CH3CHO,CC=O,1,0
-C3H8,CCC,1,0

@@ -26,6 +26,7 @@ MEAS = {
     'outlet':       'Outlet',
     'lfs':          'Flame speed',
     'half_life':    'Half-life',
+    'peak':         'Peak value',
 }
 
 

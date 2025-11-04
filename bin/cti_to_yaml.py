@@ -7,7 +7,7 @@ READ_PATH = '../lib/mechs/'  # where to look for .cti mechanism
 WRITE_PATH = '../lib/mechs/'  # where to write .yaml mechanism
 
 # Filename(s) (might not all be used)
-MECH_FILENAME = 'mulvihill_n2o_burke.cti'
+MECH_FILENAME = 'glarborg.cti'
 
 # Get the output filename
 OUT_FILENAME = MECH_FILENAME.split('.')

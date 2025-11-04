@@ -303,6 +303,11 @@ def process_st(raw_concs, raw_pressures, raw_temps, raw_times, conds_dct,
         target_spc = conds_dct['half_life_targ'][0]  
         spc_idx = all_spcs.index(target_spc)  # idx of spc in targets
         cond_ydata = get_half_life(raw_concs[spc_idx], raw_times)
+    elif meas_type == 'peak':
+        all_spcs = conds_dct['targ_spcs']
+        target_spc = conds_dct['peak_targ'][0]  
+        spc_idx = all_spcs.index(target_spc)  # idx of spc in targets
+        cond_ydata = np.nanmax(raw_concs[spc_idx])
     elif meas_type == 'abs':
         # Load information from conds_dct
         active_spcs = conds_dct['active_spc']

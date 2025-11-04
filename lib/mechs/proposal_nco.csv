@@ -1,9 +1,0 @@
-name,smiles,mult,charge,exc_flag
-O2,O=O,3,0,0
-AR,[Ar],1,0,0
-HE,[He],1,0,0
-NO,[N]=O,2,0,0
-N2O,[N-]=[N+]=O,1,0,0
-NO2,N(=O)[O],1,0,0
-O3,[O-][O+]=O,1,0,0
-CO,[C-]#[O+],1,0,0

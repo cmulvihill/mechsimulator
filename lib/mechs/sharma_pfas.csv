@@ -1,8 +1,0 @@
-name,smiles,mult,charge,exc_flag
-CH4,C,1,0,0
-HF,F,1,0,0
-CH3F,CF,1,0,0
-CH2F2,FCF,1,0,0
-CHF3,C(F)(F)F,1,0,0
-N2,N#N,1,0,0
-AR,[Ar],1,0,0

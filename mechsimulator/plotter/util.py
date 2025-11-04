@@ -70,6 +70,12 @@ def get_targ_titles(exp_set, yunit=None):
         yunit = yunit or 's'
         ylabel = f'Half life ({yunit})'
         yquant = 'half_life'
+    elif meas_type == 'peak':
+        targ_titles = ['',]
+        targ_titles = [exp_set['plot']['target_spc'][0]]
+        yunit = yunit or 'mole fraction'
+        ylabel = f'Peak value ({yunit})'
+        yquant = 'peak'
     else:
         raise NotImplementedError(f'meas_type {meas_type} not implemented')
 
@@ -110,7 +116,7 @@ def get_cond_titles(exp_set, cond_src, xunit=None):
         xquant = 'time'
 
     # If on a non-time-resolved measurement
-    elif meas_type in ('idt', 'outlet', 'lfs', 'half_life'):
+    elif meas_type in ('idt', 'outlet', 'lfs', 'half_life', 'peak'):
         if meas_type == 'idt':
             cond_titles = ['Ignition delays']
         elif meas_type == 'outlet':
@@ -119,6 +125,8 @@ def get_cond_titles(exp_set, cond_src, xunit=None):
             cond_titles = ['Laminar flame speeds']
         elif meas_type == 'half_life':
             cond_titles = ['Half life']
+        elif meas_type == 'peak':
+            cond_titles = ['Peak values']
         if xunit is None:  # if no xunit given...
             xunit = ALLOWED_UNITS[plot_var][0][0]  # ...use the default unit
         xlabel = ALLOWED_UNITS[plot_var][2] + f' ({xunit})'

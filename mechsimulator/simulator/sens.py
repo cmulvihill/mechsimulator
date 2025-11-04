@@ -215,11 +215,12 @@ def st(conds_dct, gas, meas_type, xdata, ydata_shape, factor=0.01):
     # Should I take absolute value? Should ref result ever be negative?
     ref_result += np.finfo(float).eps  # add epsilon to prevent divide by 0
 
-    exclude_spcs = ('H',)
+    exclude_spcs = ('nothing',)
     print(f'WARNING: leaving out all reactions involving {exclude_spcs}!!')
     for rxn_idx in range(num_rxns):
         #if rxn_idx in hardcoded_rxn_idxs:
         current_rxn = gas.reactions()[rxn_idx].equation
+        # NOTE: this doesn't work! Doesn't actually skip the current rxn!! 
         for exclude_spc in exclude_spcs:
             if exclude_spc in current_rxn:
                 print(f'Excluding reaction {current_rxn}')

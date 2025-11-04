@@ -128,6 +128,16 @@ def plot_single_target(target_sens_coeffs, target_rxn_names, target_ref_results,
         rxn_name = target_rxn_names[rxn_idx]
         axes[0].plot(xdata, rxn_sens_coeffs, label=rxn_name,
                     color=colors[rxn_idx], linestyle=LINES[rxn_idx % 4])
+    
+    # Fix axes values for unphysical coefficients
+    thresh = (-1, 1)
+    ylims = list(axes[0].get_ylim())
+    if ylims[0] < thresh[0]:
+        ylims[0] = thresh[0]
+    if ylims[1] > thresh[1]:
+        ylims[1] = thresh[1]
+    axes[0].set_ylim(tuple(ylims))
+    
     axes[0].legend(fontsize=7, bbox_to_anchor=(1.0, 1.01))
     axes[1].plot(xdata, target_ref_results)  # plot ref_results
 

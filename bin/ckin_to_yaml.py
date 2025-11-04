@@ -6,8 +6,8 @@ READ_PATH = '../lib/mechs/ckin'  # where to look for Chemkin mechanism
 WRITE_PATH = '../lib/mechs/'  # where to write Cantera mechanism
 
 # Filename(s) (might not all be used)
-MECH_FILENAME = 'think_v1.0_CRM.ckin'
-THERMO_FILENAME = 'think_v1.0_CRM.therm'
+MECH_FILENAME = 'ffcm2_mech_dummy.dat'
+THERMO_FILENAME = 'ffcm2_therm_fix.dat'
 TRAN_FILENAME = '230810_comb_dummy.tran'
 
 # Get the output filename

@@ -115,7 +115,11 @@ def sort_single_mech(mech_sens, gas):
         """
         # Get the max values along one axis (replace NaNs with 0; no warnings)
         if np.ndim(mech_sens) == 4:  # time-resolved
-            max_vals = np.max(abs(np.nan_to_num(mech_sens)), axis=3)  # 3 is time
+            #max_vals = np.max(abs(np.nan_to_num(mech_sens)), axis=3)  # 3 is time
+            # Trying to filter out the first few entries to get rid of spurious spikes at t=0
+            # Normally, each entry is a microsecond
+            start_entry = 30
+            max_vals = np.max(abs(np.nan_to_num(mech_sens[:,:,:,start_entry:])), axis=3)  # 3 is time
         else:  # ndims = 3; not time-resolved
             max_vals = np.max(abs(np.nan_to_num(mech_sens)), axis=1)  # 1 is cond
         # Although np.nanmax (used above) will prioritize numeric values over

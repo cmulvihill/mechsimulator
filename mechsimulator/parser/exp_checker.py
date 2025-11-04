@@ -36,7 +36,7 @@ ALLOWED_REAC_TYPES = {
     'st':           (('temp', 'pressure', 'end_time'),
                      ('dpdt',),
                      ('abs', 'emis', 'idt', 'outlet', 'ion', 'pressure',
-                      'conc', 'half_life')),
+                      'conc', 'half_life','peak')),
     'pfr':          (('temp', 'pressure', 'length', ('res_time', 'mdot'),
                       'area',),
                      ('x_profile', 't_profile', 't_profile_setpoints'),
@@ -91,6 +91,9 @@ ALLOWED_MEAS_TYPES = {
                      (),
                      (),),
     'half_life':    (('variable', 'end_time', 'target_spc'),
+                     (),
+                     ('start', 'end', 'inc',)),
+    'peak':     (('variable', 'end_time', 'target_spc'),
                      (),
                      ('start', 'end', 'inc',)),
 }
@@ -156,7 +159,7 @@ ALLOWED_PLOT_FORMAT = {
 }
 
 # Measurement types that default to plotting as points
-POINT_MEAS_TYPES = ('outlet', 'idt', 'lfs', 'half_life')
+POINT_MEAS_TYPES = ('outlet', 'idt', 'lfs', 'half_life', 'peak')
 
 
 def chk_exp_set(exp_set):

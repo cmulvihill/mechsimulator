@@ -263,6 +263,9 @@ def get_conds_dct(exp_set, mech_spc_dct, cond_src, gas, mech_opts=None):
     if meas_type == 'half_life':
         conds_dct['half_life_targ'] = exp_set['plot']['target_spc']
 
+    if meas_type == 'peak':
+        conds_dct['peak_targ'] = exp_set['plot']['target_spc']
+
     return conds_dct
 
 

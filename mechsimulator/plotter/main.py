@@ -9,7 +9,7 @@ from mechsimulator import parser
 from mechsimulator import writer
 
 # NOTE: should add this to default sim_opts! Of course, is it really a sim_opt?
-NRXNS = 25  # used for plotting of sensitivity and ROP
+NRXNS = 15  # used for plotting of sensitivity and ROP
 
 
 def mult_sets_filenames(exp_filenames, mech_filenames, spc_csv_filenames,

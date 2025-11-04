@@ -1,4 +1,0 @@
-name,smiles,mult,charge,exc_flag
-AR,[Ar],1,0,0
-H2,[H][H],1,0,0
-NO,[N]=O,2,0,0

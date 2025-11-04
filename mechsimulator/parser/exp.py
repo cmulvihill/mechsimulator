@@ -68,6 +68,7 @@ ALTERNATE_NAMES = {
     't_profile':            'temp',
     't_profile_setpoints':  'temp',
     'half_life':            'time',
+    'peak':                 'conc',
 }
 
 # Params in the 'plot' field of the 'info' sheet that should be in list form
@@ -530,6 +531,17 @@ def get_exp_data(exp_set):
         exp_ydata = np.ndarray((nconds, ntargs))
         for cond_idx, exp_obj in enumerate(exp_objs):
             exp_ydata[cond_idx] = exp_obj['result']['half_life'][0]
+
+    elif meas_type == 'peak':
+        # Get the xdata
+        exp_xdata = np.ndarray((len(exp_objs),))
+        for cond_idx, exp_obj in enumerate(exp_objs):
+            exp_xdata[cond_idx] = exp_obj['conds'][plot_var][0]
+        # Get the ydata
+        ntargs = 1  # I guess I'm limiting myself to one half-life for now...
+        exp_ydata = np.ndarray((nconds, ntargs))
+        for cond_idx, exp_obj in enumerate(exp_objs):
+            exp_ydata[cond_idx] = exp_obj['result']['peak'][0]
 
     elif meas_type == 'conc':
         # Get the xdata
